@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  multiapi:
+    build: .
+    ports:
+      - "80:80"
+      - "5000:5000"
+      - "5001:5001"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__MongoDB=${CONNECTIONSTRINGS__MONGODB}
+    volumes:
+      - ./appsettings.json:/app/CollectionManager.Api/appsettings.json:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

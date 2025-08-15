@@ -1,0 +1,73 @@
+@StarWars.Api_HostAddress = http://localhost:5229
+@json = application/json
+
+### Raiz
+GET {{StarWars.Api_HostAddress}}/
+Accept: {{json}}
+
+### Health
+GET {{StarWars.Api_HostAddress}}/health
+Accept: text/plain
+
+### Pessoas
+GET {{StarWars.Api_HostAddress}}/v1/pessoas
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/pessoas/1
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/pessoas/buscar?termo=luke
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/pessoas/filtrar?termo=r2&pagina=1&tamanhoPagina=3&ordenarPor=name&ordenarDirecao=asc
+Accept: {{json}}
+
+### Planetas
+GET {{StarWars.Api_HostAddress}}/v1/planetas
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/planetas/1
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/planetas/buscar?termo=Tatooine
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/planetas/filtrar?termo=t&pagina=1&tamanhoPagina=2&ordenarPor=name&ordenarDirecao=asc
+Accept: {{json}}
+
+### Filmes
+GET {{StarWars.Api_HostAddress}}/v1/filmes
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/filmes/1
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/filmes/buscar?termo=hope
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/filmes/filtrar?ordenarPor=title&ordenarDirecao=asc&tamanhoPagina=2
+Accept: {{json}}
+
+### Naves
+GET {{StarWars.Api_HostAddress}}/v1/naves
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/naves/buscar?termo=wing
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/naves/filtrar?pagina=2
+Accept: {{json}}
+
+### Veículos
+GET {{StarWars.Api_HostAddress}}/v1/veiculos
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/veiculos/buscar?termo=speeder
+Accept: {{json}}
+
+### Espécies
+GET {{StarWars.Api_HostAddress}}/v1/especies
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/especies/filtrar?ordenarPor=name&tamanhoPagina=5
+Accept: {{json}}
