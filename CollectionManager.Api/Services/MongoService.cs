@@ -7,6 +7,20 @@ public class MongoService
 {
     private readonly IMongoDatabase _database;
     private readonly IMongoCollection<Collection> _collections;
+
+    private static string? GetDatabaseNameFromConnectionString(string connectionString)
+    {
+        try
+        {
+            var uri = new Uri(connectionString);
+            var databaseName = uri.AbsolutePath.TrimStart('/');
+            return string.IsNullOrEmpty(databaseName) ? null : databaseName;
+        }
+        catch
+        {
+            return null;
+        }
+    }
     private readonly IConfiguration _configuration;
 
     public MongoService(IConfiguration configuration)
@@ -19,7 +33,10 @@ public class MongoService
             ?? "mongodb://localhost:27017";
             
         var client = new MongoClient(connectionString);
-        _database = client.GetDatabase("CollectionManager");
+        
+        // Extrair o nome do database da connection string ou usar padrão
+        var databaseName = GetDatabaseNameFromConnectionString(connectionString) ?? "multiapi";
+        _database = client.GetDatabase(databaseName);
         _collections = _database.GetCollection<Collection>("Collections");
     }
 

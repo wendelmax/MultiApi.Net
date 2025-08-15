@@ -13,7 +13,7 @@ builder.Services.AddSwaggerGen(options =>
     {
         Title = "Collection Manager API",
         Version = "v1",
-        Description = "API that allows students to create MongoDB collections and perform CRUD operations using unique API keys.",
+        Description = "API que permite aos alunos criarem coleções MongoDB e realizar operações CRUD usando chaves de API únicas. Sistema desenvolvido para o curso de desenvolvimento de sistemas da ETEC de Campinas.",
         Contact = new OpenApiContact
         {
             Name = "MultiApi.Net",
@@ -57,8 +57,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(setup =>
     {
-        setup.SwaggerEndpoint("/swagger/v1/swagger.json", "Collection Manager API v1");
-        setup.DocumentTitle = "Collection Manager API";
+            setup.SwaggerEndpoint("/swagger/v1/swagger.json", "Collection Manager API v1");
+    setup.DocumentTitle = "Collection Manager API - Gerenciador de Coleções MongoDB";
     });
 }
 

@@ -5,7 +5,7 @@ using CollectionManager.Api.Services;
 namespace CollectionManager.Api.Controllers;
 
 /// <summary>
-/// Controller for managing MongoDB collections
+/// Controlador para gerenciar coleções MongoDB
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
@@ -19,10 +19,10 @@ public class CollectionsController : ControllerBase
     }
 
     /// <summary>
-    /// Creates a new collection with a unique API key
+    /// Cria uma nova coleção com uma chave de API única
     /// </summary>
-    /// <param name="request">Collection creation request</param>
-    /// <returns>Created collection with API key</returns>
+    /// <param name="request">Solicitação de criação da coleção</param>
+    /// <returns>Coleção criada com chave de API</returns>
     [HttpPost]
     [ProducesResponseType(typeof(CreateCollectionResponse), 201)]
     [ProducesResponseType(400)]
@@ -55,9 +55,9 @@ public class CollectionsController : ControllerBase
     }
 
     /// <summary>
-    /// Gets all collections
+    /// Obtém todas as coleções
     /// </summary>
-    /// <returns>List of all collections</returns>
+    /// <returns>Lista de todas as coleções</returns>
     [HttpGet]
     [ProducesResponseType(typeof(List<Collection>), 200)]
     public async Task<ActionResult<List<Collection>>> GetCollections()
@@ -67,10 +67,10 @@ public class CollectionsController : ControllerBase
     }
 
     /// <summary>
-    /// Gets a specific collection by name
+    /// Obtém uma coleção específica por nome
     /// </summary>
-    /// <param name="id">Collection name</param>
-    /// <returns>Collection information</returns>
+    /// <param name="id">Nome da coleção</param>
+    /// <returns>Informações da coleção</returns>
     [HttpGet("{id}")]
     [ProducesResponseType(typeof(Collection), 200)]
     [ProducesResponseType(404)]
@@ -86,10 +86,10 @@ public class CollectionsController : ControllerBase
     }
 
     /// <summary>
-    /// Deletes a collection and all its documents
+    /// Exclui uma coleção e todos os seus documentos
     /// </summary>
-    /// <param name="id">Collection ID</param>
-    /// <returns>No content on success</returns>
+    /// <param name="id">ID da coleção</param>
+    /// <returns>Sem conteúdo em caso de sucesso</returns>
     [HttpDelete("{id}")]
     [ProducesResponseType(204)]
     [ProducesResponseType(404)]
