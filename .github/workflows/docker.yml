@@ -136,6 +136,13 @@ jobs:
         if: github.event.inputs.build_only != 'true'
         run: |
           echo "Testing container health..."
+          
+          # First, test if the image can run at all
+          echo "Testing basic container startup..."
+          docker run --rm --name basic-test ${{ steps.meta.outputs.tags }} echo "Container can start successfully"
+          
+          # Now test the full container
+          echo "Starting full container for health testing..."
           docker run --rm -d --name health-test -p 8080:80 \
             -e CONNECTIONSTRINGS__MONGODB="${{ env.MONGODB_CONNECTION_STRING }}" \
             ${{ steps.meta.outputs.tags }}
@@ -143,10 +150,28 @@ jobs:
           echo "Container started. Checking status..."
           docker ps -a
           
-          echo "Waiting for services to start..."
-          sleep 120
+          echo "Monitoring container startup..."
+          for i in {1..24}; do
+            echo "Check $i/24 - Container status:"
+            docker ps -a | grep health-test || echo "Container not found"
+            
+            if docker ps -a | grep health-test > /dev/null; then
+              echo "Container is running. Checking logs:"
+              docker logs health-test --tail 10
+            else
+              echo "Container died! Final logs:"
+              docker logs health-test --tail 50 2>/dev/null || echo "No logs available"
+              echo "Container failed to start properly"
+              exit 1
+            fi
+            
+            if [ $i -lt 24 ]; then
+              echo "Waiting 10s before next check..."
+              sleep 10
+            fi
+          done
           
-          echo "Checking container status again..."
+          echo "Container survived startup phase. Final status check:"
           docker ps -a
           docker logs health-test --tail 50
           
@@ -220,6 +245,15 @@ jobs:
         run: |
           echo "Container failed health checks. Checking logs..."
           docker logs health-test || echo "Could not get container logs"
+          
+          echo "Checking all containers:"
+          docker ps -a
+          
+          echo "Checking Docker system info:"
+          docker system df
+          
+          echo "Checking recent Docker events:"
+          docker events --since 5m --until 0m || echo "Could not get Docker events"
           
       - name: Cleanup test container
         if: always() && github.event.inputs.build_only != 'true'

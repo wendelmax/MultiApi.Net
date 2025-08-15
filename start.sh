@@ -7,12 +7,26 @@ dotnet StarWars.Api.dll --urls "http://localhost:5000" &
 STARWARS_PID=$!
 echo "StarWars API started with PID: $STARWARS_PID"
 
+# Verify StarWars API process started
+sleep 2
+if ! kill -0 $STARWARS_PID 2>/dev/null; then
+    echo "ERROR: StarWars API failed to start!"
+    exit 1
+fi
+
 # Start Collection Manager API on port 5001
 echo "Starting Collection Manager API on port 5001..."
 cd /app/CollectionManager.Api
 dotnet CollectionManager.Api.dll --urls "http://localhost:5001" &
 COLLECTION_PID=$!
 echo "Collection Manager API started with PID: $COLLECTION_PID"
+
+# Verify Collection Manager API process started
+sleep 2
+if ! kill -0 $COLLECTION_PID 2>/dev/null; then
+    echo "ERROR: Collection Manager API failed to start!"
+    exit 1
+fi
 
 # Wait for services to start and verify they're running
 echo "Waiting for services to start..."
@@ -22,11 +36,15 @@ sleep 20
 echo "Checking if processes are still running..."
 if ! kill -0 $STARWARS_PID 2>/dev/null; then
     echo "ERROR: StarWars API process died!"
+    echo "Process status:"
+    ps aux | grep dotnet || echo "No dotnet processes found"
     exit 1
 fi
 
 if ! kill -0 $COLLECTION_PID 2>/dev/null; then
     echo "ERROR: Collection Manager API process died!"
+    echo "Process status:"
+    ps aux | grep dotnet || echo "No dotnet processes found"
     exit 1
 fi
 
