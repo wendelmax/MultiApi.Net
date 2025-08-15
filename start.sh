@@ -8,9 +8,11 @@ STARWARS_PID=$!
 echo "StarWars API started with PID: $STARWARS_PID"
 
 # Verify StarWars API process started
-sleep 2
+sleep 3
 if ! kill -0 $STARWARS_PID 2>/dev/null; then
     echo "ERROR: StarWars API failed to start!"
+    echo "Process status:"
+    ps aux | grep dotnet || echo "No dotnet processes found"
     exit 1
 fi
 
@@ -22,9 +24,11 @@ COLLECTION_PID=$!
 echo "Collection Manager API started with PID: $COLLECTION_PID"
 
 # Verify Collection Manager API process started
-sleep 2
+sleep 3
 if ! kill -0 $COLLECTION_PID 2>/dev/null; then
     echo "ERROR: Collection Manager API failed to start!"
+    echo "Process status:"
+    ps aux | grep dotnet || echo "No dotnet processes found"
     exit 1
 fi
 

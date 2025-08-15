@@ -27,7 +27,7 @@ env:
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}
-  DOTNET_VERSION: '9.0.x'
+  DOTNET_VERSION: '8.0.x'
   MONGODB_CONNECTION_STRING: ${{ secrets.CONNECTIONSTRINGS__MONGODB }}
 
 jobs:

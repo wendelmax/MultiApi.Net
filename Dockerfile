@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copy solution and project files
@@ -21,8 +21,13 @@ RUN dotnet publish StarWars.Api/StarWars.Api.csproj -c Release -o /app/StarWars.
 RUN dotnet publish CollectionManager.Api/CollectionManager.Api.csproj -c Release -o /app/CollectionManager.Api --no-build
 
 # Runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
+
+# Set environment variables to use .NET 8.0
+ENV DOTNET_ROOT=/usr/share/dotnet
+ENV DOTNET_USE_POLLING_FILE_WATCHER=true
+ENV ASPNETCORE_URLS=http://+:5000;http://+:5001
 
 # Install nginx and curl for health checks
 RUN apt-get update && apt-get install -y nginx curl && rm -rf /var/lib/apt/lists/*
