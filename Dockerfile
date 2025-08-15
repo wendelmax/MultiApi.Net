@@ -24,8 +24,8 @@ RUN dotnet publish CollectionManager.Api/CollectionManager.Api.csproj -c Release
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS runtime
 WORKDIR /app
 
-# Install nginx
-RUN apt-get update && apt-get install -y nginx && rm -rf /var/lib/apt/lists/*
+# Install nginx and curl for health checks
+RUN apt-get update && apt-get install -y nginx curl && rm -rf /var/lib/apt/lists/*
 
 # Copy published apps
 COPY --from=build /app/StarWars.Api ./StarWars.Api

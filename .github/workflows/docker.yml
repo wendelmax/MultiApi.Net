@@ -140,23 +140,78 @@ jobs:
             -e CONNECTIONSTRINGS__MONGODB="${{ env.MONGODB_CONNECTION_STRING }}" \
             ${{ steps.meta.outputs.tags }}
           
+          echo "Container started. Checking status..."
+          docker ps -a
+          
           echo "Waiting for services to start..."
-          sleep 90
+          sleep 120
           
-          echo "Testing health endpoint..."
-          curl -f http://localhost:8080/health || exit 1
+          echo "Checking container status again..."
+          docker ps -a
+          docker logs health-test --tail 50
           
-          echo "Testing root endpoint..."
-          curl -f http://localhost:8080/ || exit 1
+          echo "Testing health endpoint with retry..."
+          for i in {1..5}; do
+            if curl -f http://localhost:8080/health; then
+              echo "Health endpoint OK!"
+              break
+            fi
+            echo "Health endpoint failed, attempt $i/5. Waiting 10s..."
+            sleep 10
+            if [ $i -eq 5 ]; then
+              echo "Health endpoint failed after 5 attempts"
+              exit 1
+            fi
+          done
+          
+          echo "Testing root endpoint with retry..."
+          for i in {1..5}; do
+            if curl -f http://localhost:8080/; then
+              echo "Root endpoint OK!"
+              break
+            fi
+            echo "Root endpoint failed, attempt $i/5. Waiting 10s..."
+            sleep 10
+            if [ $i -eq 5 ]; then
+              echo "Root endpoint failed after 5 attempts"
+              exit 1
+            fi
+          done
           
           echo "Waiting additional time for APIs to fully start..."
-          sleep 45
+          sleep 60
           
-          echo "Testing StarWars API endpoint..."
-          curl -f http://localhost:8080/starwars/ || exit 1
+          echo "Final container status check..."
+          docker ps -a
+          docker logs health-test --tail 50
           
-          echo "Testing Collection Manager API endpoint..."
-          curl -f http://localhost:8080/collections/ || exit 1
+          echo "Testing StarWars API endpoint with retry..."
+          for i in {1..5}; do
+            if curl -f http://localhost:8080/starwars/; then
+              echo "StarWars API OK!"
+              break
+            fi
+            echo "StarWars API failed, attempt $i/5. Waiting 10s..."
+            sleep 10
+            if [ $i -eq 5 ]; then
+              echo "StarWars API failed after 5 attempts"
+              exit 1
+            fi
+          done
+          
+          echo "Testing Collection Manager API endpoint with retry..."
+          for i in {1..5}; do
+            if curl -f http://localhost:8080/collections/; then
+              echo "Collection Manager API OK!"
+              break
+            fi
+            echo "Collection Manager API failed, attempt $i/5. Waiting 10s..."
+            sleep 10
+            if [ $i -eq 5 ]; then
+              echo "Collection Manager API failed after 5 attempts"
+              exit 1
+            fi
+          done
           
           echo "All health checks passed successfully!"
 
