@@ -12,8 +12,32 @@ cd /app/CollectionManager.Api
 dotnet CollectionManager.Api.dll --urls "http://localhost:5001" &
 COLLECTION_PID=$!
 
-# Wait a moment for services to start
-sleep 5
+# Wait for services to start and verify they're running
+echo "Waiting for services to start..."
+sleep 15
+
+# Verify services are running
+echo "Verifying services are running..."
+for i in {1..45}; do
+    if curl -s http://localhost:5000/health > /dev/null 2>&1 && \
+       curl -s http://localhost:5001/health > /dev/null 2>&1; then
+        echo "Both APIs are responding!"
+        break
+    fi
+    echo "Waiting for APIs to be ready... (attempt $i/45)"
+    sleep 2
+done
+
+# Final verification
+if ! curl -s http://localhost:5000/health > /dev/null 2>&1 || \
+   ! curl -s http://localhost:5001/health > /dev/null 2>&1; then
+    echo "ERROR: One or both APIs failed to start properly!"
+    echo "StarWars API status:"
+    curl -v http://localhost:5000/health || echo "StarWars API not responding"
+    echo "Collection Manager API status:"
+    curl -v http://localhost:5001/health || echo "Collection Manager API not responding"
+    exit 1
+fi
 
 # Start Nginx
 echo "Starting Nginx..."

@@ -141,7 +141,7 @@ jobs:
             ${{ steps.meta.outputs.tags }}
           
           echo "Waiting for services to start..."
-          sleep 45
+          sleep 90
           
           echo "Testing health endpoint..."
           curl -f http://localhost:8080/health || exit 1
@@ -149,14 +149,23 @@ jobs:
           echo "Testing root endpoint..."
           curl -f http://localhost:8080/ || exit 1
           
+          echo "Waiting additional time for APIs to fully start..."
+          sleep 45
+          
           echo "Testing StarWars API endpoint..."
           curl -f http://localhost:8080/starwars/ || exit 1
           
-          echo "Testing Collection Manager endpoint..."
+          echo "Testing Collection Manager API endpoint..."
           curl -f http://localhost:8080/collections/ || exit 1
           
-          echo "All health checks passed!"
+          echo "All health checks passed successfully!"
 
+      - name: Debug container logs on failure
+        if: failure() && github.event.inputs.build_only != 'true'
+        run: |
+          echo "Container failed health checks. Checking logs..."
+          docker logs health-test || echo "Could not get container logs"
+          
       - name: Cleanup test container
         if: always() && github.event.inputs.build_only != 'true'
         run: |
@@ -187,7 +196,7 @@ jobs:
           docker-compose up -d --build
           
           echo "Waiting for services to start..."
-          sleep 60
+          sleep 90
           
           echo "Testing health endpoint..."
           curl -f http://localhost/health || exit 1
