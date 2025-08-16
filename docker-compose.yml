@@ -10,8 +10,12 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__MongoDB=${CONNECTIONSTRINGS__MONGODB}
+      - MongoDB__UseCertificate=${MONGODB_USE_CERTIFICATE:-true}
+      - MongoDB__CertificatePath=${MONGODB_CERT_PATH:-/certs/client.pem}
+      - MongoDB__CertificatePassword=${MONGODB_CERT_PASSWORD:-}
     volumes:
       - ./appsettings.json:/app/CollectionManager.Api/appsettings.json:ro
+      - ./certs:/certs:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost/health"]

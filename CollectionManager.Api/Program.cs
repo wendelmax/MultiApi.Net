@@ -1,4 +1,6 @@
 using CollectionManager.Api.Services;
+using CollectionManager.Api.Data;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 
@@ -7,13 +9,19 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHealthChecks();
+
+builder.Services.AddDbContext<CollectionManagerContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<CollectionService>();
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "Collection Manager API",
         Version = "v1",
-        Description = "API que permite aos alunos criarem coleções MongoDB e realizar operações CRUD usando chaves de API únicas. Sistema desenvolvido para o curso de desenvolvimento de sistemas da ETEC de Campinas.",
+        Description = "API que permite aos alunos criarem coleções SQL Server e realizar operações CRUD usando chaves de API únicas. Sistema desenvolvido para o curso de desenvolvimento de sistemas da ETEC de Campinas.",
         Contact = new OpenApiContact
         {
             Name = "MultiApi.Net",
@@ -38,8 +46,6 @@ builder.Services.AddSwaggerGen(options =>
     options.DocInclusionPredicate((_, _) => true);
 });
 
-builder.Services.AddSingleton<MongoService>();
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -57,8 +63,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI(setup =>
     {
-            setup.SwaggerEndpoint("/swagger/v1/swagger.json", "Collection Manager API v1");
-    setup.DocumentTitle = "Collection Manager API - Gerenciador de Coleções MongoDB";
+        setup.SwaggerEndpoint("/swagger/v1/swagger.json", "Collection Manager API v1");
+        setup.DocumentTitle = "Collection Manager API - Gerenciador de Coleções SQL Server";
     });
 }
 

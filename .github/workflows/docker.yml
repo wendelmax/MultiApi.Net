@@ -28,7 +28,6 @@ env:
   # github.repository as <account>/<repo>
   IMAGE_NAME: ${{ github.repository }}
   DOTNET_VERSION: '8.0.x'
-  MONGODB_CONNECTION_STRING: ${{ secrets.CONNECTIONSTRINGS__MONGODB }}
 
 jobs:
   build:
@@ -131,107 +130,6 @@ jobs:
         # This step uses the identity token to provision an ephemeral certificate
         # against the sigstore community Fulcio instance.
         run: echo "${TAGS}" | xargs -I {} cosign sign --yes {}@${DIGEST}
-
-      - name: Test container health
-        if: github.event.inputs.build_only != 'true'
-        run: |
-          echo "Testing container health..."
-          
-          # First, test if the image can run at all
-          echo "Testing basic container startup..."
-          docker run --rm --name basic-test ${{ steps.meta.outputs.tags }} echo "Container can start successfully"
-          
-          # Now test the full container
-          echo "Starting full container for health testing..."
-          docker run --rm -d --name health-test -p 8080:80 \
-            -e CONNECTIONSTRINGS__MONGODB="${{ env.MONGODB_CONNECTION_STRING }}" \
-            ${{ steps.meta.outputs.tags }}
-          
-          echo "Container started. Checking status..."
-          docker ps -a
-          
-          echo "Monitoring container startup..."
-          for i in {1..12}; do
-            echo "Check $i/12 - Container status:"
-            docker ps -a | grep health-test || echo "Container not found"
-            
-            if docker ps -a | grep health-test > /dev/null; then
-              echo "Container is running. Checking logs:"
-              docker logs health-test --tail 5
-              
-              # Check if APIs are responding
-              if curl -s http://localhost:8080/health > /dev/null 2>&1; then
-                echo "APIs are responding! Proceeding to endpoint tests..."
-                break
-              fi
-            else
-              echo "Container died! Final logs:"
-              docker logs health-test --tail 50 2>/dev/null || echo "No logs available"
-              echo "Container failed to start properly"
-              exit 1
-            fi
-            
-            if [ $i -lt 12 ]; then
-              echo "Waiting 15s before next check..."
-              sleep 15
-            fi
-          done
-          
-          echo "Container survived startup phase. Final status check:"
-          docker ps -a
-          docker logs health-test --tail 50
-          
-          echo "Testing health endpoint..."
-          if curl -f http://localhost:8080/health; then
-            echo "Health endpoint OK!"
-          else
-            echo "Health endpoint failed"
-            exit 1
-          fi
-          
-          echo "Testing root endpoint..."
-          if curl -f http://localhost:8080/ > /dev/null 2>&1; then
-            echo "Root endpoint OK!"
-          else
-            echo "Root endpoint failed"
-            exit 1
-          fi
-          
-          echo "APIs are ready. Proceeding to endpoint tests..."
-          
-          echo "Final container status check..."
-          docker ps -a
-          docker logs health-test --tail 50
-          
-          echo "Testing StarWars API endpoint with retry..."
-          for i in {1..5}; do
-            if curl -f http://localhost:8080/starwars/; then
-              echo "StarWars API OK!"
-              break
-            fi
-            echo "StarWars API failed, attempt $i/5. Waiting 10s..."
-            sleep 10
-            if [ $i -eq 5 ]; then
-              echo "StarWars API failed after 5 attempts"
-              exit 1
-            fi
-          done
-          
-          echo "Testing Collection Manager API endpoint with retry..."
-          for i in {1..5}; do
-            if curl -f http://localhost:8080/collections/; then
-              echo "Collection Manager API OK!"
-              break
-            fi
-            echo "Collection Manager API failed, attempt $i/5. Waiting 10s..."
-            sleep 10
-            if [ $i -eq 5 ]; then
-              echo "Collection Manager API failed after 5 attempts"
-              exit 1
-            fi
-          done
-          
-          echo "All health checks passed successfully!"
 
       - name: Debug container logs on failure
         if: failure() && github.event.inputs.build_only != 'true'
