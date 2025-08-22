@@ -13,17 +13,26 @@ Accept: text/plain
 GET {{StarWars.Api_HostAddress}}/v1/pessoas
 Accept: {{json}}
 
+GET {{StarWars.Api_HostAddress}}/v1/pessoas?page=1&pageSize=10
+Accept: {{json}}
+
 GET {{StarWars.Api_HostAddress}}/v1/pessoas/1
 Accept: {{json}}
 
 GET {{StarWars.Api_HostAddress}}/v1/pessoas/buscar?termo=luke
 Accept: {{json}}
 
-GET {{StarWars.Api_HostAddress}}/v1/pessoas/filtrar?termo=r2&pagina=1&tamanhoPagina=3&ordenarPor=name&ordenarDirecao=asc
+GET {{StarWars.Api_HostAddress}}/v1/pessoas/especie/Human
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/pessoas/planeta/Tatooine
 Accept: {{json}}
 
 ### Planetas
 GET {{StarWars.Api_HostAddress}}/v1/planetas
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/planetas?page=1&pageSize=10
 Accept: {{json}}
 
 GET {{StarWars.Api_HostAddress}}/v1/planetas/1
@@ -52,22 +61,53 @@ Accept: {{json}}
 GET {{StarWars.Api_HostAddress}}/v1/naves
 Accept: {{json}}
 
+GET {{StarWars.Api_HostAddress}}/v1/naves?page=1&pageSize=10
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/naves/1
+Accept: {{json}}
+
 GET {{StarWars.Api_HostAddress}}/v1/naves/buscar?termo=wing
 Accept: {{json}}
 
-GET {{StarWars.Api_HostAddress}}/v1/naves/filtrar?pagina=2
+GET {{StarWars.Api_HostAddress}}/v1/naves/filtrar?pagina=2&tamanhoPagina=5&ordenarPor=name&ordenarDirecao=asc
 Accept: {{json}}
 
 ### Veículos
 GET {{StarWars.Api_HostAddress}}/v1/veiculos
 Accept: {{json}}
 
+GET {{StarWars.Api_HostAddress}}/v1/veiculos?page=1&pageSize=10
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/veiculos/1
+Accept: {{json}}
+
 GET {{StarWars.Api_HostAddress}}/v1/veiculos/buscar?termo=speeder
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/veiculos/filtrar?pagina=1&tamanhoPagina=5&ordenarPor=name&ordenarDirecao=asc
 Accept: {{json}}
 
 ### Espécies
 GET {{StarWars.Api_HostAddress}}/v1/especies
 Accept: {{json}}
 
-GET {{StarWars.Api_HostAddress}}/v1/especies/filtrar?ordenarPor=name&tamanhoPagina=5
+GET {{StarWars.Api_HostAddress}}/v1/especies?page=1&pageSize=10
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/especies/1
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/especies/buscar?termo=human
+Accept: {{json}}
+
+GET {{StarWars.Api_HostAddress}}/v1/especies/filtrar?ordenarPor=name&tamanhoPagina=5&ordenarDirecao=asc
+Accept: {{json}}
+
+### Database
+GET {{StarWars.Api_HostAddress}}/v1/database/status
+Accept: {{json}}
+
+POST {{StarWars.Api_HostAddress}}/v1/database/seed
 Accept: {{json}}

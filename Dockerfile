@@ -1,50 +1,45 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
+# Install native compilation tools for AOT
+RUN apt-get update && apt-get install -y \
+    clang \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy solution and project files
 COPY MultiApi.Net.sln ./
 COPY StarWars.Api/*.csproj ./StarWars.Api/
-COPY CollectionManager.Api/*.csproj ./CollectionManager.Api/
 
 # Restore dependencies
 RUN dotnet restore
 
 # Copy source code
 COPY StarWars.Api/ ./StarWars.Api/
-COPY CollectionManager.Api/ ./CollectionManager.Api/
 
-# Build projects
+# Build project
 RUN dotnet build -c Release --no-restore
 
-# Publish projects
+# Publish project with AOT
 RUN dotnet publish StarWars.Api/StarWars.Api.csproj -c Release -o /app/StarWars.Api --no-build
-RUN dotnet publish CollectionManager.Api/CollectionManager.Api.csproj -c Release -o /app/CollectionManager.Api --no-build
 
-# Runtime image
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+# Runtime image - using distroless for smaller size
+FROM mcr.microsoft.com/dotnet/runtime-deps:8.0-jammy-chiseled AS runtime
 WORKDIR /app
 
-# Set environment variables to use .NET 8.0
+# Set environment variables
 ENV DOTNET_ROOT=/usr/share/dotnet
-ENV DOTNET_USE_POLLING_FILE_WATCHER=true
 ENV ASPNETCORE_URLS=http://+:5000;http://+:5001
 
-# Install nginx and curl for health checks
-RUN apt-get update && apt-get install -y nginx curl && rm -rf /var/lib/apt/lists/*
-
-# Copy published apps
+# Copy published app
 COPY --from=build /app/StarWars.Api ./StarWars.Api
-COPY --from=build /app/CollectionManager.Api ./CollectionManager.Api
-
-# Copy nginx configuration
-COPY nginx.conf /etc/nginx/nginx.conf
-
-# Copy startup script
-COPY start.sh ./start.sh
-RUN chmod +x ./start.sh
 
 # Expose ports
-EXPOSE 80 5000 5001
+EXPOSE 5000 5001
 
-# Start both services and nginx
-CMD ["./start.sh"]
+# Set working directory to the app
+WORKDIR /app/StarWars.Api
+
+# Start the application
+ENTRYPOINT ["./StarWars.Api"]
