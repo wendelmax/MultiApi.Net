@@ -21,14 +21,16 @@ public class RootController : ControllerBase
             documentacao = $"{baseUrl}/swagger",
             recursos = new
             {
+                filmes = $"{baseUrl}/v1/filmes",
                 pessoas = $"{baseUrl}/v1/pessoas",
                 planetas = $"{baseUrl}/v1/planetas",
-                filmes = $"{baseUrl}/v1/filmes",
                 naves = $"{baseUrl}/v1/naves",
                 veiculos = $"{baseUrl}/v1/veiculos",
                 especies = $"{baseUrl}/v1/especies"
             },
-            documentacao_origem = "https://swapi.py4e.com/documentation"
+            status = "API local - dados do universo Star Wars",
+            total_endpoints = 6,
+            nota = "Todos os endpoints implementados e funcionando!"
         });
     }
 }

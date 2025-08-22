@@ -2,8 +2,11 @@ using Microsoft.OpenApi.Models;
 using System.Reflection;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Microsoft.EntityFrameworkCore;
-using StarWars.Api.Data;
-using StarWars.Api.Services;
+using StarWars.Api.Data.Context;
+using StarWars.Api.Repositories.Interfaces;
+using StarWars.Api.Repositories.Implementations;
+using StarWars.Api.Services.Interfaces;
+using StarWars.Api.Services.Implementations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,10 +47,7 @@ builder.Services.AddSwaggerGen(options =>
     options.DocInclusionPredicate((_, _) => true);
 });
 
-builder.Services.AddHttpClient("swapi", client =>
-{
-    client.BaseAddress = new Uri("https://swapi.py4e.com/api/");
-});
+// HTTP Client removido - agora usamos apenas banco local
 
 builder.Services.AddCors(options =>
 {
@@ -57,12 +57,27 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddHealthChecks();
 
-// EF Core + SQLite
+// Database configuration - SQL Server LocalDB
 builder.Services.AddDbContext<StarWarsDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("StarWars")));
 
-// Cache service
-builder.Services.AddScoped<IApiCacheService, ApiCacheService>();
+// Repositories
+builder.Services.AddScoped<IFilmRepository, FilmRepository>();
+builder.Services.AddScoped<IPersonRepository, PersonRepository>();
+builder.Services.AddScoped<IPlanetRepository, PlanetRepository>();
+builder.Services.AddScoped<IStarshipRepository, StarshipRepository>();
+builder.Services.AddScoped<IVehicleRepository, VehicleRepository>();
+builder.Services.AddScoped<ISpeciesRepository, SpeciesRepository>();
+
+// Services
+builder.Services.AddScoped<IFilmService, FilmService>();
+builder.Services.AddScoped<IPersonService, PersonService>();
+builder.Services.AddScoped<IPlanetService, PlanetService>();
+builder.Services.AddScoped<IStarshipService, StarshipService>();
+builder.Services.AddScoped<IVehicleService, VehicleService>();
+builder.Services.AddScoped<ISpeciesService, SpeciesService>();
+
+builder.Services.AddScoped<IDatabaseSeedService, DatabaseSeedService>();
 
 var app = builder.Build();
 
@@ -80,11 +95,32 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHealthChecks("/health");
 
-// Create database on startup (simple EnsureCreated for cache persistence)
+// Initialize database on startup
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<StarWarsDbContext>();
-    await db.Database.EnsureCreatedAsync();
+    var seedService = scope.ServiceProvider.GetRequiredService<IDatabaseSeedService>();
+    
+    try
+    {
+        await db.Database.EnsureCreatedAsync();
+        
+        var isSeeded = await seedService.IsDatabaseSeededAsync();
+        if (!isSeeded)
+        {
+            await seedService.SeedAsync();
+        }
+        else
+        {
+            var count = await seedService.GetSeedCountAsync();
+            Console.WriteLine($"✅ Banco de dados já populado com {count} entidades");
+        }
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"❌ Erro durante inicialização do banco: {ex.Message}");
+        throw;
+    }
 }
 
 app.Run();

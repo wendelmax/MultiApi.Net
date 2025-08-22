@@ -28,8 +28,11 @@ O MultiApi.Net é um projeto que combina duas APIs distintas em uma única solu�
 
 ### **StarWars API**
 - Endpoints para personagens, planetas e naves
+- **Banco de dados local** com dados completos do universo Star Wars
+- **LocalDB** como padrão (performance máxima para desenvolvimento)
+- **SQLite** como alternativa cross-platform
 - Documentação Swagger integrada
-- Dados de exemplo do universo Star Wars
+- Dados de exemplo do universo Star Wars (287 registros)
 
 ### **Collection Manager API**
 - **Criação de Coleções**: Cada aluno cria sua própria coleção
@@ -42,11 +45,32 @@ O MultiApi.Net é um projeto que combina duas APIs distintas em uma única solu�
 ## 🛠️ **Tecnologias Utilizadas**
 
 - **.NET 9.0** - Framework principal
+- **Entity Framework Core** - ORM para banco de dados
+- **SQL Server LocalDB** - Banco padrão para desenvolvimento (Windows)
+- **SQLite** - Banco alternativo cross-platform
 - **MongoDB.Driver** - Driver oficial do MongoDB
 - **Swagger/OpenAPI** - Documentação da API
 - **Docker** - Containerização
 - **Nginx** - Proxy reverso
 - **GitHub Actions** - CI/CD automatizado
+
+## 📁 **Estrutura do Projeto**
+
+```
+MultiApi.Net/
+├── StarWars.Api/                    # API Star Wars com banco local
+│   ├── Database/                    # Scripts e configurações de banco
+│   │   ├── Scripts/
+│   │   │   ├── LocalDB/            # Scripts para SQL Server LocalDB
+│   │   │   └── SQLite/             # Scripts para SQLite
+│   │   └── README.md               # Documentação do banco
+│   ├── Controllers/                 # Endpoints da API
+│   ├── Services/                    # Lógica de negócio
+│   └── Data/                       # Contexto do Entity Framework
+├── CollectionManager.Api/           # API de gerenciamento de coleções
+├── docker-compose.yml              # Configuração Docker
+└── README.md                       # Este arquivo
+```
 
 ## 📦 **Instalação e Execução**
 

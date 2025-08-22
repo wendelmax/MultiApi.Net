@@ -1,156 +1,90 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using Swashbuckle.AspNetCore.Annotations;
-using StarWars.Api.Services;
-using Microsoft.Extensions.Configuration;
+using StarWars.Api.Services.Interfaces;
+using StarWars.Api.DTOs;
 
 namespace StarWars.Api.Controllers;
 
 /// <summary>
-/// Endpoints para consultar naves estelares (starships) da SWAPI.
+/// Endpoints para consultar naves estelares do banco local.
 /// </summary>
 [ApiController]
 [Route("v1/naves")]
 [Produces("application/json")]
-[SwaggerTag("Naves")]
+[SwaggerTag("Naves Estelares")]
 public class StarshipsController : ControllerBase
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IApiCacheService _cache;
-    private readonly IConfiguration _config;
+    private readonly IStarshipService _starshipService;
 
-    public StarshipsController(IHttpClientFactory httpClientFactory, IApiCacheService cache, IConfiguration config)
+    public StarshipsController(IStarshipService starshipService)
     {
-        _httpClientFactory = httpClientFactory;
-        _cache = cache;
-        _config = config;
-    }
-
-    private async Task<(string Content, string ContentType)> GetUpstreamWithCacheAsync(string path)
-    {
-        var cacheKey = $"starships::{path}";
-        var (hit, payload, contentType) = await _cache.TryGetAsync(cacheKey);
-        if (hit) return (payload!, contentType);
-
-        var client = _httpClientFactory.CreateClient("swapi");
-        var response = await client.GetAsync(path);
-        var content = await response.Content.ReadAsStringAsync();
-        if (response.IsSuccessStatusCode)
-        {
-            var ttlSec = _config.GetValue<int>("Cache:SecondsToLive", 3600);
-            await _cache.SetAsync(cacheKey, content, "application/json", TimeSpan.FromSeconds(ttlSec));
-        }
-        return (content, "application/json");
+        _starshipService = starshipService;
     }
 
     /// <summary>
-    /// Lista naves com paginação nativa da SWAPI.
+    /// Lista todas as naves estelares do banco local.
     /// </summary>
-    /// <param name="pagina">Página desejada (opcional).</param>
     [HttpGet]
-    [SwaggerOperation(Summary = "Lista naves")]
-    public async Task<IActionResult> GetAll([FromQuery(Name = "pagina")] int? pagina = null)
+    [SwaggerOperation(Summary = "Lista naves estelares")]
+    public async Task<IActionResult> GetAll([FromQuery] int? page = null, [FromQuery] int? pageSize = null)
     {
-        var url = pagina is null ? "starships/" : $"starships/?page={pagina}";
-        var (content, contentType) = await GetUpstreamWithCacheAsync(url);
-        return Content(content, contentType);
+        var result = await _starshipService.GetStarshipsAsync(page, pageSize);
+        return Ok(result);
     }
 
     /// <summary>
-    /// Obtém uma nave por id.
+    /// Obtém uma nave estelar específica por id do banco local.
     /// </summary>
     [HttpGet("{id:int}")]
-    [SwaggerOperation(Summary = "Nave por id")]
+    [SwaggerOperation(Summary = "Nave estelar por id")]
     public async Task<IActionResult> GetById([FromRoute] int id)
     {
-        var url = $"starships/{id}/";
-        var (content, contentType) = await GetUpstreamWithCacheAsync(url);
-        return Content(content, contentType);
+        var starship = await _starshipService.GetStarshipByIdAsync(id);
+        
+        if (starship == null)
+            return NotFound(new { error = "Nave estelar não encontrada" });
+
+        return Ok(starship);
     }
 
     /// <summary>
-    /// Pesquisa naves por termo.
+    /// Pesquisa naves estelares por termo no banco local.
     /// </summary>
-    /// <param name="termo">Termo de busca.</param>
+    /// <param name="termo">Termo de busca (case-insensitive).</param>
     [HttpGet("buscar")]
-    [SwaggerOperation(Summary = "Busca naves")]
+    [SwaggerOperation(Summary = "Busca naves estelares")]
     public async Task<IActionResult> Search([FromQuery(Name = "termo")] string termo)
     {
         if (string.IsNullOrWhiteSpace(termo))
         {
-            return BadRequest(new { error = "Parâmetro q é obrigatório." });
+            return BadRequest(new { error = "Parâmetro 'termo' é obrigatório." });
         }
-        var url = $"starships/?search={Uri.EscapeDataString(termo)}";
-        var (content, contentType) = await GetUpstreamWithCacheAsync(url);
-        return Content(content, contentType);
+
+        var result = await _starshipService.SearchStarshipsAsync(termo);
+        return Ok(result);
     }
 
     /// <summary>
-    /// Filtra naves com suporte a paginação e ordenação locais.
+    /// Busca naves estelares por classe.
     /// </summary>
-    /// <param name="termo">Termo de busca (opcional).</param>
-    /// <param name="pagina">Página desejada (opcional).</param>
-    /// <param name="tamanhoPagina">Tamanho da página aplicado localmente (opcional).</param>
-    /// <param name="ordenarPor">Campo para ordenar localmente (ex.: name, model) (opcional).</param>
-    /// <param name="ordenarDirecao">Direção de ordenação: asc ou desc (padrão asc).</param>
-    [HttpGet("filtrar")]
-    [SwaggerOperation(Summary = "Filtra naves", Description = "Filtra naves com paginação e ordenação locais. Retorna envelope padronizado.")]
-    public async Task<IActionResult> Filter(
-        [FromQuery(Name = "termo")] string? termo,
-        [FromQuery(Name = "pagina")] int? pagina = null,
-        [FromQuery(Name = "tamanhoPagina")] int? tamanhoPagina = null,
-        [FromQuery(Name = "ordenarPor")] string? ordenarPor = null,
-        [FromQuery(Name = "ordenarDirecao")] string? ordenarDirecao = "asc")
+    /// <param name="classe">Classe da nave para filtrar.</param>
+    [HttpGet("classe/{classe}")]
+    [SwaggerOperation(Summary = "Naves estelares por classe")]
+    public async Task<IActionResult> GetByClass([FromRoute] string classe)
     {
-        var client = _httpClientFactory.CreateClient("swapi");
-        var queryParts = new List<string>();
-        if (pagina is not null) queryParts.Add($"page={pagina}");
-        if (!string.IsNullOrWhiteSpace(termo)) queryParts.Add($"search={Uri.EscapeDataString(termo)}");
-        var url = "starships/" + (queryParts.Count > 0 ? "?" + string.Join("&", queryParts) : string.Empty);
+        var starships = await _starshipService.GetStarshipsByClassAsync(classe);
+        return Ok(new { count = starships.Count(), results = starships });
+    }
 
-        var (text, _) = await GetUpstreamWithCacheAsync(url);
-
-        using var doc = JsonDocument.Parse(text);
-        var root = doc.RootElement;
-        var count = root.TryGetProperty("count", out var countProp) ? countProp.GetInt32() : 0;
-        var results = root.TryGetProperty("results", out var resultsProp) ? resultsProp.EnumerateArray().ToList() : new List<JsonElement>();
-
-        if (!string.IsNullOrWhiteSpace(ordenarPor))
-        {
-            var key = ordenarPor.Trim();
-            results = results
-                .OrderBy(e => e.TryGetProperty(key, out var p) ? p.ToString() : null, StringComparer.OrdinalIgnoreCase)
-                .ToList();
-            if (string.Equals(ordenarDirecao, "desc", StringComparison.OrdinalIgnoreCase))
-            {
-                results.Reverse();
-            }
-        }
-
-        if (tamanhoPagina is not null && tamanhoPagina.Value > 0)
-        {
-            results = results.Take(tamanhoPagina.Value).ToList();
-        }
-
-        var itensArray = new JsonArray();
-        foreach (var item in results)
-        {
-            itensArray.Add(JsonNode.Parse(item.GetRawText()));
-        }
-
-        var shaped = new JsonObject
-        {
-            ["total"] = count,
-            ["pagina"] = pagina ?? 1,
-            ["tamanhoPagina"] = tamanhoPagina ?? results.Count,
-            ["ordenarPor"] = ordenarPor ?? string.Empty,
-            ["ordenarDirecao"] = ordenarDirecao ?? "asc",
-            ["itens"] = itensArray
-        };
-
-        return Content(shaped.ToJsonString(), "application/json");
+    /// <summary>
+    /// Busca naves estelares por fabricante.
+    /// </summary>
+    /// <param name="fabricante">Fabricante para filtrar.</param>
+    [HttpGet("fabricante/{fabricante}")]
+    [SwaggerOperation(Summary = "Naves estelares por fabricante")]
+    public async Task<IActionResult> GetByManufacturer([FromRoute] string fabricante)
+    {
+        var starships = await _starshipService.GetStarshipsByManufacturerAsync(fabricante);
+        return Ok(new { count = starships.Count(), results = starships });
     }
 }
-
-

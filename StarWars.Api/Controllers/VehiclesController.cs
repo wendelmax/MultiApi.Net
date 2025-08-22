@@ -1,14 +1,12 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using Swashbuckle.AspNetCore.Annotations;
-using StarWars.Api.Services;
-using Microsoft.Extensions.Configuration;
+using StarWars.Api.Services.Interfaces;
+using StarWars.Api.DTOs;
 
 namespace StarWars.Api.Controllers;
 
 /// <summary>
-/// Endpoints para consultar veículos da SWAPI.
+/// Endpoints para consultar veículos do banco local.
 /// </summary>
 [ApiController]
 [Route("v1/veiculos")]
@@ -16,141 +14,77 @@ namespace StarWars.Api.Controllers;
 [SwaggerTag("Veículos")]
 public class VehiclesController : ControllerBase
 {
-    private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IApiCacheService _cache;
-    private readonly IConfiguration _config;
+    private readonly IVehicleService _vehicleService;
 
-    public VehiclesController(IHttpClientFactory httpClientFactory, IApiCacheService cache, IConfiguration config)
+    public VehiclesController(IVehicleService vehicleService)
     {
-        _httpClientFactory = httpClientFactory;
-        _cache = cache;
-        _config = config;
-    }
-
-    private async Task<(string Content, string ContentType)> GetUpstreamWithCacheAsync(string path)
-    {
-        var cacheKey = $"vehicles::{path}";
-        var (hit, payload, contentType) = await _cache.TryGetAsync(cacheKey);
-        if (hit) return (payload!, contentType);
-
-        var client = _httpClientFactory.CreateClient("swapi");
-        var response = await client.GetAsync(path);
-        var content = await response.Content.ReadAsStringAsync();
-        if (response.IsSuccessStatusCode)
-        {
-            var ttlSec = _config.GetValue<int>("Cache:SecondsToLive", 3600);
-            await _cache.SetAsync(cacheKey, content, "application/json", TimeSpan.FromSeconds(ttlSec));
-        }
-        return (content, "application/json");
+        _vehicleService = vehicleService;
     }
 
     /// <summary>
-    /// Lista veículos com paginação nativa da SWAPI.
+    /// Lista todos os veículos do banco local.
     /// </summary>
-    /// <param name="pagina">Página desejada (opcional).</param>
     [HttpGet]
     [SwaggerOperation(Summary = "Lista veículos")]
-    public async Task<IActionResult> GetAll([FromQuery(Name = "pagina")] int? pagina = null)
+    public async Task<IActionResult> GetAll([FromQuery] int? page = null, [FromQuery] int? pageSize = null)
     {
-        var url = pagina is null ? "vehicles/" : $"vehicles/?page={pagina}";
-        var (content, contentType) = await GetUpstreamWithCacheAsync(url);
-        return Content(content, contentType);
+        var result = await _vehicleService.GetVehiclesAsync(page, pageSize);
+        return Ok(result);
     }
 
     /// <summary>
-    /// Obtém um veículo por id.
+    /// Obtém um veículo específico por id do banco local.
     /// </summary>
     [HttpGet("{id:int}")]
     [SwaggerOperation(Summary = "Veículo por id")]
     public async Task<IActionResult> GetById([FromRoute] int id)
     {
-        var url = $"vehicles/{id}/";
-        var (content, contentType) = await GetUpstreamWithCacheAsync(url);
-        return Content(content, contentType);
+        var vehicle = await _vehicleService.GetVehicleByIdAsync(id);
+        
+        if (vehicle == null)
+            return NotFound(new { error = "Veículo não encontrado" });
+
+        return Ok(vehicle);
     }
 
     /// <summary>
-    /// Pesquisa veículos por termo.
+    /// Pesquisa veículos por termo no banco local.
     /// </summary>
-    /// <param name="termo">Termo de busca.</param>
+    /// <param name="termo">Termo de busca (case-insensitive).</param>
     [HttpGet("buscar")]
     [SwaggerOperation(Summary = "Busca veículos")]
     public async Task<IActionResult> Search([FromQuery(Name = "termo")] string termo)
     {
         if (string.IsNullOrWhiteSpace(termo))
         {
-            return BadRequest(new { error = "Parâmetro q é obrigatório." });
+            return BadRequest(new { error = "Parâmetro 'termo' é obrigatório." });
         }
-        var url = $"vehicles/?search={Uri.EscapeDataString(termo)}";
-        var (content, contentType) = await GetUpstreamWithCacheAsync(url);
-        return Content(content, contentType);
+
+        var result = await _vehicleService.SearchVehiclesAsync(termo);
+        return Ok(result);
     }
 
     /// <summary>
-    /// Filtra veículos com suporte a paginação e ordenação locais.
+    /// Busca veículos por classe.
     /// </summary>
-    /// <param name="termo">Termo de busca (opcional).</param>
-    /// <param name="pagina">Página desejada (opcional).</param>
-    /// <param name="tamanhoPagina">Tamanho da página aplicado localmente (opcional).</param>
-    /// <param name="ordenarPor">Campo para ordenar localmente (ex.: name, model) (opcional).</param>
-    /// <param name="ordenarDirecao">Direção de ordenação: asc ou desc (padrão asc).</param>
-    [HttpGet("filtrar")]
-    [SwaggerOperation(Summary = "Filtra veículos", Description = "Filtra veículos com paginação e ordenação locais. Retorna envelope padronizado.")]
-    public async Task<IActionResult> Filter(
-        [FromQuery(Name = "termo")] string? termo,
-        [FromQuery(Name = "pagina")] int? pagina = null,
-        [FromQuery(Name = "tamanhoPagina")] int? tamanhoPagina = null,
-        [FromQuery(Name = "ordenarPor")] string? ordenarPor = null,
-        [FromQuery(Name = "ordenarDirecao")] string? ordenarDirecao = "asc")
+    /// <param name="classe">Classe do veículo para filtrar.</param>
+    [HttpGet("classe/{classe}")]
+    [SwaggerOperation(Summary = "Veículos por classe")]
+    public async Task<IActionResult> GetByClass([FromRoute] string classe)
     {
-        var client = _httpClientFactory.CreateClient("swapi");
-        var queryParts = new List<string>();
-        if (pagina is not null) queryParts.Add($"page={pagina}");
-        if (!string.IsNullOrWhiteSpace(termo)) queryParts.Add($"search={Uri.EscapeDataString(termo)}");
-        var url = "vehicles/" + (queryParts.Count > 0 ? "?" + string.Join("&", queryParts) : string.Empty);
+        var vehicles = await _vehicleService.GetVehiclesByClassAsync(classe);
+        return Ok(new { count = vehicles.Count(), results = vehicles });
+    }
 
-        var (text, _) = await GetUpstreamWithCacheAsync(url);
-
-        using var doc = JsonDocument.Parse(text);
-        var root = doc.RootElement;
-        var count = root.TryGetProperty("count", out var countProp) ? countProp.GetInt32() : 0;
-        var results = root.TryGetProperty("results", out var resultsProp) ? resultsProp.EnumerateArray().ToList() : new List<JsonElement>();
-
-        if (!string.IsNullOrWhiteSpace(ordenarPor))
-        {
-            var key = ordenarPor.Trim();
-            results = results
-                .OrderBy(e => e.TryGetProperty(key, out var p) ? p.ToString() : null, StringComparer.OrdinalIgnoreCase)
-                .ToList();
-            if (string.Equals(ordenarDirecao, "desc", StringComparison.OrdinalIgnoreCase))
-            {
-                results.Reverse();
-            }
-        }
-
-        if (tamanhoPagina is not null && tamanhoPagina.Value > 0)
-        {
-            results = results.Take(tamanhoPagina.Value).ToList();
-        }
-
-        var itensArray = new JsonArray();
-        foreach (var item in results)
-        {
-            itensArray.Add(JsonNode.Parse(item.GetRawText()));
-        }
-
-        var shaped = new JsonObject
-        {
-            ["total"] = count,
-            ["pagina"] = pagina ?? 1,
-            ["tamanhoPagina"] = tamanhoPagina ?? results.Count,
-            ["ordenarPor"] = ordenarPor ?? string.Empty,
-            ["ordenarDirecao"] = ordenarDirecao ?? "asc",
-            ["itens"] = itensArray
-        };
-
-        return Content(shaped.ToJsonString(), "application/json");
+    /// <summary>
+    /// Busca veículos por fabricante.
+    /// </summary>
+    /// <param name="fabricante">Fabricante para filtrar.</param>
+    [HttpGet("fabricante/{fabricante}")]
+    [SwaggerOperation(Summary = "Veículos por fabricante")]
+    public async Task<IActionResult> GetByManufacturer([FromRoute] string fabricante)
+    {
+        var vehicles = await _vehicleService.GetVehiclesByManufacturerAsync(fabricante);
+        return Ok(new { count = vehicles.Count(), results = vehicles });
     }
 }
-
-
