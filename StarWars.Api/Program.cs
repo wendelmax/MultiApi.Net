@@ -105,16 +105,12 @@ using (var scope = app.Services.CreateScope())
     {
         await db.Database.EnsureCreatedAsync();
         
-        var isSeeded = await seedService.IsDatabaseSeededAsync();
-        if (!isSeeded)
-        {
-            await seedService.SeedAsync();
-        }
-        else
-        {
-            var count = await seedService.GetSeedCountAsync();
-            Console.WriteLine($"✅ Banco de dados já populado com {count} entidades");
-        }
+        // Forçar seed sempre para debug
+        Console.WriteLine("🔄 Forçando seed do banco de dados...");
+        await seedService.SeedAsync();
+        
+        var count = await seedService.GetSeedCountAsync();
+        Console.WriteLine($"✅ Banco de dados populado com {count} entidades");
     }
     catch (Exception ex)
     {
