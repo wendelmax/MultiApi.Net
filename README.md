@@ -1,13 +1,10 @@
-# MultiApi.Net 🚀
+# Star Wars API 🚀
 
-Uma solução completa de APIs .NET com MongoDB para gerenciamento de coleções e dados dinâmicos, ideal para projetos educacionais e aplicações multi-tenant.
+Uma API .NET completa para dados do universo Star Wars, ideal para projetos educacionais e aplicações que precisam de dados do universo Star Wars.
 
 ## 📋 **Visão Geral**
 
-O MultiApi.Net é um projeto que combina duas APIs distintas em uma única solução containerizada:
-
-- **StarWars API**: API de exemplo com dados do universo Star Wars
-- **Collection Manager API**: Sistema de gerenciamento de coleções MongoDB com chaves de API únicas
+A Star Wars API é uma solução completa que fornece acesso a dados do universo Star Wars através de uma API REST moderna e documentada.
 
 ## 🏗️ **Arquitetura**
 
@@ -15,32 +12,22 @@ O MultiApi.Net é um projeto que combina duas APIs distintas em uma única solu�
 ┌─────────────────────────────────────────────────────────────┐
 │                    Container Docker                         │
 ├─────────────────────────────────────────────────────────────┤
-│  Nginx (Porta 80) - Proxy Reverso                         │
+│  StarWars API (Porta 5000)                                  │
 ├─────────────────────────────────────────────────────────────┤
-│  StarWars API (Porta 5000)                                │
-│  Collection Manager API (Porta 5001)                      │
-├─────────────────────────────────────────────────────────────┤
-│  MongoDB (Externo - Atlas)                                 │
+│  Banco de Dados Local (SQLite)                              │
 └─────────────────────────────────────────────────────────────┘
 ```
 
 ## 🚀 **Funcionalidades Principais**
 
-### **StarWars API**
-- Endpoints para personagens, planetas e naves
+- Endpoints para personagens, planetas, espécies, naves e veículos
 - **Banco de dados local** com dados completos do universo Star Wars
 - **LocalDB** como padrão (performance máxima para desenvolvimento)
 - **SQLite** como alternativa cross-platform
 - Documentação Swagger integrada
 - Dados de exemplo do universo Star Wars (287 registros)
-
-### **Collection Manager API**
-- **Criação de Coleções**: Cada aluno cria sua própria coleção
-- **API Keys Únicas**: Credenciais individuais para acesso
-- **CRUD Completo**: Operações de leitura, escrita, atualização e exclusão
-- **Consultas Personalizadas**: Suporte a queries MongoDB avançadas
-- **Documentos Dinâmicos**: Estrutura flexível para qualquer tipo de dado
-- **Controle de Acesso**: Isolamento entre coleções de diferentes usuários
+- CRUD completo para todas as entidades
+- Relacionamentos entre entidades (filmes, personagens, planetas, etc.)
 
 ## 🛠️ **Tecnologias Utilizadas**
 
@@ -48,50 +35,45 @@ O MultiApi.Net é um projeto que combina duas APIs distintas em uma única solu�
 - **Entity Framework Core** - ORM para banco de dados
 - **SQL Server LocalDB** - Banco padrão para desenvolvimento (Windows)
 - **SQLite** - Banco alternativo cross-platform
-- **MongoDB.Driver** - Driver oficial do MongoDB
 - **Swagger/OpenAPI** - Documentação da API
 - **Docker** - Containerização
-- **Nginx** - Proxy reverso
 - **GitHub Actions** - CI/CD automatizado
 
 ## 📁 **Estrutura do Projeto**
 
 ```
-MultiApi.Net/
-├── StarWars.Api/                    # API Star Wars com banco local
-│   ├── Database/                    # Scripts e configurações de banco
-│   │   ├── Scripts/
-│   │   │   ├── LocalDB/            # Scripts para SQL Server LocalDB
-│   │   │   └── SQLite/             # Scripts para SQLite
-│   │   └── README.md               # Documentação do banco
-│   ├── Controllers/                 # Endpoints da API
-│   ├── Services/                    # Lógica de negócio
-│   └── Data/                       # Contexto do Entity Framework
-├── CollectionManager.Api/           # API de gerenciamento de coleções
-├── docker-compose.yml              # Configuração Docker
-└── README.md                       # Este arquivo
+StarWars.Api/
+├── Controllers/                 # Endpoints da API
+│   ├── FilmsController.cs      # Gerenciamento de filmes
+│   ├── PeopleController.cs     # Gerenciamento de personagens
+│   ├── PlanetsController.cs    # Gerenciamento de planetas
+│   ├── SpeciesController.cs    # Gerenciamento de espécies
+│   ├── StarshipsController.cs  # Gerenciamento de naves
+│   └── VehiclesController.cs   # Gerenciamento de veículos
+├── Services/                    # Lógica de negócio
+├── Repositories/               # Acesso a dados
+├── Models/                     # Entidades do banco de dados
+├── DTOs/                      # Objetos de transferência de dados
+├── Data/                      # Contexto do Entity Framework
+└── Database/                  # Scripts e configurações de banco
 ```
 
 ## 📦 **Instalação e Execução**
 
 ### **Pré-requisitos**
-- Docker Desktop instalado e rodando
+- Docker Desktop instalado e rodando (opcional)
 - .NET 9.0 SDK (para desenvolvimento local)
-- MongoDB Atlas ou instância local
 
-### **Opção 1: Docker Compose (Recomendado)**
+### **Opção 1: Docker (Recomendado)**
 
 ```bash
 # Clone o repositório
-git clone https://github.com/seu-usuario/MultiApi.Net.git
-cd MultiApi.Net
+git clone https://github.com/seu-usuario/StarWars.Api.git
+cd StarWars.Api
 
-# Configure as variáveis de ambiente
-cp .env.example.txt .env
-# Edite o arquivo .env com sua connection string do MongoDB
-
-# Execute com Docker Compose
-docker-compose up --build
+# Execute com Docker
+docker build -t starwars-api .
+docker run -p 5000:5000 starwars-api
 ```
 
 ### **Opção 2: Desenvolvimento Local**
@@ -100,103 +82,104 @@ docker-compose up --build
 # Restaure as dependências
 dotnet restore
 
-# Execute as APIs
+# Execute a API
 dotnet run --project StarWars.Api
-dotnet run --project CollectionManager.Api
 ```
 
 ## 🌐 **Endpoints Disponíveis**
 
-### **StarWars API**
-- **Base URL**: `http://localhost/starwars/`
-- **Swagger**: `http://localhost/starwars/swagger`
+### **Star Wars API**
+- **Base URL**: `http://localhost:5000/`
+- **Swagger**: `http://localhost:5000/swagger`
 
-### **Collection Manager API**
-- **Base URL**: `http://localhost/collections/`
-- **Swagger**: `http://localhost/collections/swagger`
-- **Endpoints**:
-  - `POST /collections` - Criar nova coleção
-  - `GET /collections` - Listar coleções
-  - `POST /documents/{collectionName}` - Inserir documento
-  - `GET /documents/{collectionName}` - Buscar documentos
-  - `PUT /documents/{collectionName}/{id}` - Atualizar documento
-  - `DELETE /documents/{collectionName}/{id}` - Excluir documento
-  - `POST /query/{collectionName}` - Consultas personalizadas
+### **Endpoints Principais**
+- **Filmes**: `GET /api/films` - Lista todos os filmes
+- **Personagens**: `GET /api/people` - Lista todos os personagens
+- **Planetas**: `GET /api/planets` - Lista todos os planetas
+- **Espécies**: `GET /api/species` - Lista todas as espécies
+- **Naves**: `GET /api/starships` - Lista todas as naves
+- **Veículos**: `GET /api/vehicles` - Lista todos os veículos
 
-## 📚 **Como Usar o Sistema**
+### **Operações CRUD**
+Cada endpoint suporta:
+- `GET /api/{entity}` - Listar todos
+- `GET /api/{entity}/{id}` - Buscar por ID
+- `POST /api/{entity}` - Criar novo
+- `PUT /api/{entity}/{id}` - Atualizar
+- `DELETE /api/{entity}/{id}` - Excluir
 
-### **1. Criar uma Coleção**
+## 📚 **Como Usar a API**
+
+### **1. Listar Todos os Filmes**
 
 ```bash
-curl -X POST http://localhost/collections \
+curl -X GET "http://localhost:5000/api/films"
+```
+
+### **2. Buscar Personagem por ID**
+
+```bash
+curl -X GET "http://localhost:5000/api/people/1"
+```
+
+### **3. Criar Novo Personagem**
+
+```bash
+curl -X POST "http://localhost:5000/api/people" \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "meu-projeto",
-    "description": "Dados do meu projeto escolar",
-    "owner": "aluno@escola.edu"
+    "name": "Luke Skywalker",
+    "height": "172",
+    "mass": "77",
+    "hairColor": "blond",
+    "eyeColor": "blue",
+    "birthYear": "19BBY",
+    "gender": "male"
   }'
 ```
 
-**Resposta:**
-```json
-{
-  "collectionId": "507f1f77bcf86cd799439011",
-  "name": "meu-projeto",
-  "apiKey": "aB3cD4eF5gH6iJ7kL8mN9oP0qR1sT2uV3wX4yZ5",
-  "createdAt": "2024-01-15T10:30:00Z",
-  "message": "Collection created successfully"
-}
-```
-
-### **2. Inserir Dados na Coleção**
+### **4. Atualizar Personagem**
 
 ```bash
-curl -X POST http://localhost/documents/meu-projeto \
+curl -X PUT "http://localhost:5000/api/people/1" \
   -H "Content-Type: application/json" \
-  -H "X-API-Key: aB3cD4eF5gH6iJ7kL8mN9oP0qR1sT2uV3wX4yZ5" \
   -d '{
-    "nome": "João Silva",
-    "idade": 18,
-    "notas": [8.5, 9.0, 7.8],
-    "projeto": "Sistema de Gestão Escolar"
+    "name": "Luke Skywalker",
+    "height": "175",
+    "mass": "80"
   }'
 ```
 
-### **3. Consultar Dados**
+## 🗄️ **Banco de Dados**
 
-```bash
-curl -X GET "http://localhost/documents/meu-projeto?filter[idade]=18" \
-  -H "X-API-Key: aB3cD4eF5gH6iJ7kL8mN9oP0qR1sT2uV3wX4yZ5"
-```
+### **Configuração**
+- **LocalDB** (Windows): Banco padrão para desenvolvimento
+- **SQLite**: Alternativa cross-platform
+- **Dados Iniciais**: Scripts SQL incluídos para popular o banco
 
-### **4. Consultas Personalizadas**
+### **Entidades Principais**
+- **Films**: Informações sobre os filmes da saga
+- **People**: Personagens do universo Star Wars
+- **Planets**: Planetas e suas características
+- **Species**: Espécies alienígenas
+- **Starships**: Naves espaciais
+- **Vehicles**: Veículos terrestres e aéreos
 
-```bash
-curl -X POST http://localhost/query/meu-projeto \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: aB3cD4eF5gH6iJ7kL8mN9oP0qR1sT2uV3wX4yZ5" \
-  -d '{
-    "operation": "aggregate",
-    "pipeline": [
-      {"$match": {"idade": {"$gte": 18}}},
-      {"$group": {"_id": "$projeto", "total": {"$sum": 1}}}
-    ]
-  }'
-```
-
-## 🔐 **Segurança e Autenticação**
-
-- **API Keys Únicas**: Cada coleção tem sua própria chave de acesso
-- **Isolamento de Dados**: Usuários só acessam suas próprias coleções
-- **Validação de Headers**: Todas as operações requerem `X-API-Key`
-- **CORS Configurado**: Suporte a aplicações web
+### **Relacionamentos**
+- Filmes ↔ Personagens (muitos para muitos)
+- Filmes ↔ Planetas (muitos para muitos)
+- Filmes ↔ Espécies (muitos para muitos)
+- Filmes ↔ Naves (muitos para muitos)
+- Filmes ↔ Veículos (muitos para muitos)
+- Personagens ↔ Espécies (muitos para muitos)
+- Personagens ↔ Naves (muitos para muitos)
+- Personagens ↔ Veículos (muitos para muitos)
+- Planetas ↔ Residentes (muitos para muitos)
 
 ## 🐳 **Docker e Deploy**
 
 ### **Estrutura do Container**
-- **Porta 80**: Nginx (proxy reverso)
-- **Porta 5000**: StarWars API (interno)
-- **Porta 5001**: Collection Manager API (interno)
+- **Porta 5000**: Star Wars API
 
 ### **Scripts de Deploy**
 - **Windows**: `build-docker.bat`
@@ -204,8 +187,8 @@ curl -X POST http://localhost/query/meu-projeto \
 
 ### **Variáveis de Ambiente**
 ```bash
-CONNECTIONSTRINGS__MONGODB=mongodb+srv://user:pass@cluster.mongodb.net/
 ASPNETCORE_ENVIRONMENT=Development
+ConnectionStrings__DefaultConnection=Data Source=starwars.db
 ```
 
 ## 🔄 **CI/CD com GitHub Actions**
@@ -227,7 +210,7 @@ O projeto inclui workflow automatizado que:
 - **Health Check**: `GET /health`
 - **Status Geral**: `GET /` (informações dos serviços)
 - **Logs**: Acessíveis via Docker logs
-- **Métricas**: Swagger UI para cada API
+- **Métricas**: Swagger UI integrado
 
 ## 🚨 **Troubleshooting**
 
@@ -235,28 +218,28 @@ O projeto inclui workflow automatizado que:
 
 1. **Container não inicia**
    ```bash
-   docker-compose logs multiapi
+   docker logs starwars-api
    ```
 
-2. **Erro de conexão MongoDB**
-   - Verifique a connection string no arquivo `.env`
-   - Confirme se o MongoDB Atlas está acessível
+2. **Erro de conexão com banco**
+   - Verifique se o arquivo de banco existe
+   - Confirme as permissões de arquivo
 
 3. **Portas em uso**
    ```bash
-   netstat -an | findstr :80
+   netstat -an | findstr :5000
    ```
 
 ### **Logs e Debug**
 ```bash
 # Logs do container
-docker-compose logs -f multiapi
+docker logs -f starwars-api
 
 # Acesso ao container
-docker-compose exec multiapi bash
+docker exec -it starwars-api bash
 
 # Status dos serviços
-docker-compose ps
+docker ps
 ```
 
 ## 🤝 **Contribuição**
@@ -273,27 +256,27 @@ Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalh
 
 ## 📞 **Suporte**
 
-- **Issues**: [GitHub Issues](https://github.com/seu-usuario/MultiApi.Net/issues)
-- **Documentação**: Swagger UI integrado em cada API
-- **Exemplos**: Veja a pasta `examples/` para casos de uso
+- **Issues**: [GitHub Issues](https://github.com/seu-usuario/StarWars.Api/issues)
+- **Documentação**: Swagger UI integrado na API
+- **Exemplos**: Veja os endpoints para casos de uso
 
 ## 🎯 **Casos de Uso**
 
 ### **Educacional**
-- Projetos escolares com dados isolados
-- Aulas de programação com MongoDB
-- Desenvolvimento de aplicações multi-tenant
+- Aulas de programação com APIs REST
+- Projetos escolares sobre Star Wars
+- Desenvolvimento de aplicações web
 
 ### **Desenvolvimento**
 - Prototipagem rápida de APIs
-- Testes de integração com MongoDB
-- Demonstração de arquiteturas containerizadas
+- Testes de integração
+- Demonstração de Entity Framework Core
 
 ### **Produção**
-- APIs multi-tenant
-- Sistema de gerenciamento de dados dinâmicos
-- Microserviços com proxy reverso
+- APIs para aplicações Star Wars
+- Sistema de gerenciamento de dados
+- Microserviços com banco relacional
 
 ---
 
-**MultiApi.Net** - Simplificando o desenvolvimento de APIs com MongoDB 🚀
+**Star Wars API** - Explorando o universo Star Wars através de APIs modernas 🚀
