@@ -6,6 +6,8 @@ RUN apt-get update && apt-get install -y \
     clang \
     gcc \
     g++ \
+    zlib1g-dev \
+    libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy solution and project files
