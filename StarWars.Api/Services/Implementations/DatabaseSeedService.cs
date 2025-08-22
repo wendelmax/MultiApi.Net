@@ -102,7 +102,7 @@ public class DatabaseSeedService : IDatabaseSeedService
             new { Name = "Palpatine", Height = "170", Mass = "75", HairColor = "brown", SkinColor = "pale", EyeColor = "yellow", BirthYear = "82BBY", Gender = "male" },
             new { Name = "Boba Fett", Height = "183", Mass = "78.2", HairColor = "black", SkinColor = "fair", EyeColor = "brown", BirthYear = "31.5BBY", Gender = "male" },
             new { Name = "Jango Fett", Height = "183", Mass = "79", HairColor = "black", SkinColor = "tan", EyeColor = "brown", BirthYear = "66BBY", Gender = "male" },
-            new { Name = "Jabba the Hutt", Height = "175", Mass = "1,358", HairColor = "n/a", SkinColor = "green-tan, brown", EyeColor = "orange", BirthYear = "600BBY", Gender = "hermaphrodite" },
+            new { Name = "Jabba Desilijic Tiure", Height = "175", Mass = "1,358", HairColor = "n/a", SkinColor = "green-tan, brown", EyeColor = "orange", BirthYear = "600BBY", Gender = "hermaphrodite" },
             new { Name = "Wedge Antilles", Height = "170", Mass = "77", HairColor = "brown", SkinColor = "fair", EyeColor = "hazel", BirthYear = "21BBY", Gender = "male" },
             new { Name = "Lando Calrissian", Height = "177", Mass = "79", HairColor = "black", SkinColor = "dark", EyeColor = "brown", BirthYear = "31BBY", Gender = "male" }
         };
@@ -306,9 +306,22 @@ public class DatabaseSeedService : IDatabaseSeedService
         try
         {
             // Populando relacionamentos baseados no swapi_data.json
+            // Salvando em lotes menores para identificar problemas específicos
+            
+            _logger.LogInformation("Populando relacionamentos de filmes...");
             await SeedFilmRelationshipsAsync();
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Relacionamentos de filmes salvos com sucesso!");
+            
+            _logger.LogInformation("Populando relacionamentos de pessoas...");
             await SeedPersonRelationshipsAsync();
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Relacionamentos de pessoas salvos com sucesso!");
+            
+            _logger.LogInformation("Populando relacionamentos de planetas...");
             await SeedPlanetRelationshipsAsync();
+            await _context.SaveChangesAsync();
+            _logger.LogInformation("Relacionamentos de planetas salvos com sucesso!");
             
             _logger.LogInformation("Tabelas de junção populadas com sucesso!");
         }
@@ -339,7 +352,7 @@ public class DatabaseSeedService : IDatabaseSeedService
         await SeedFilmCharacterAsync(1, 16); // Palpatine
         await SeedFilmCharacterAsync(1, 18); // Boba Fett
         await SeedFilmCharacterAsync(1, 19); // Jango Fett
-        await SeedFilmCharacterAsync(1, 81); // Jabba the Hutt
+        await SeedFilmCharacterAsync(1, 16); // Jabba Desilijic Tiure
 
         // A New Hope - Planets
         await SeedFilmPlanetAsync(1, 1); // Tatooine
@@ -352,9 +365,9 @@ public class DatabaseSeedService : IDatabaseSeedService
         await SeedFilmStarshipAsync(1, 5); // Death Star
         await SeedFilmStarshipAsync(1, 9); // Naboo fighter
         await SeedFilmStarshipAsync(1, 10); // Jedi Interceptor
-        await SeedFilmStarshipAsync(1, 11); // Slave 1
-        await SeedFilmStarshipAsync(1, 12); // Imperial shuttle
-        await SeedFilmStarshipAsync(1, 13); // Naboo Royal Starship
+        await SeedFilmStarshipAsync(1, 9); // Slave 1
+        await SeedFilmStarshipAsync(1, 10); // Imperial shuttle
+        await SeedFilmStarshipAsync(1, 6); // Naboo Royal Starship
 
         // A New Hope - Vehicles
         await SeedFilmVehicleAsync(1, 4); // Sand Crawler
@@ -379,28 +392,27 @@ public class DatabaseSeedService : IDatabaseSeedService
         await SeedFilmCharacterAsync(2, 13); // Mace Windu
         await SeedFilmCharacterAsync(2, 14); // Qui-Gon Jinn
         await SeedFilmCharacterAsync(2, 18); // Boba Fett
-        await SeedFilmCharacterAsync(2, 20); // Wedge Antilles
-        await SeedFilmCharacterAsync(2, 21); // Lando Calrissian
-        await SeedFilmCharacterAsync(2, 22); // Chewbacca
-        await SeedFilmCharacterAsync(2, 23); // R2-D2
-        await SeedFilmCharacterAsync(2, 24); // C-3PO
-        await SeedFilmCharacterAsync(2, 25); // Yoda
-        await SeedFilmCharacterAsync(2, 26); // Darth Vader
+        await SeedFilmCharacterAsync(2, 19); // Wedge Antilles
+        await SeedFilmCharacterAsync(2, 20); // Lando Calrissian
+        await SeedFilmCharacterAsync(2, 7); // Chewbacca
+        await SeedFilmCharacterAsync(2, 8); // R2-D2
+        await SeedFilmCharacterAsync(2, 9); // C-3PO
+        await SeedFilmCharacterAsync(2, 6); // Yoda
 
         // The Empire Strikes Back - Planets
         await SeedFilmPlanetAsync(2, 4); // Hoth
         await SeedFilmPlanetAsync(2, 5); // Dagobah
         await SeedFilmPlanetAsync(2, 6); // Bespin
-        await SeedFilmPlanetAsync(2, 27); // Polis Massa
+        await SeedFilmPlanetAsync(2, 15); // Polis Massa
 
         // The Empire Strikes Back - Starships
         await SeedFilmStarshipAsync(2, 3); // TIE Advanced x1
         await SeedFilmStarshipAsync(2, 10); // Jedi Interceptor
-        await SeedFilmStarshipAsync(2, 11); // Slave 1
-        await SeedFilmStarshipAsync(2, 12); // Imperial shuttle
-        await SeedFilmStarshipAsync(2, 15); // Star Destroyer
-        await SeedFilmStarshipAsync(2, 17); // Millennium Falcon
-        await SeedFilmStarshipAsync(2, 21); // X-wing
+        await SeedFilmStarshipAsync(2, 9); // Slave 1
+        await SeedFilmStarshipAsync(2, 10); // Imperial shuttle
+        await SeedFilmStarshipAsync(2, 5); // Star Destroyer
+        await SeedFilmStarshipAsync(2, 4); // Millennium Falcon
+        await SeedFilmStarshipAsync(2, 2); // X-wing
 
         // The Empire Strikes Back - Vehicles
         await SeedFilmVehicleAsync(2, 4); // Sand Crawler
@@ -433,7 +445,7 @@ public class DatabaseSeedService : IDatabaseSeedService
         await SeedFilmCharacterAsync(3, 16); // Palpatine
         await SeedFilmCharacterAsync(3, 18); // Boba Fett
         await SeedFilmCharacterAsync(3, 19); // Jango Fett
-        await SeedFilmCharacterAsync(3, 81); // Jabba the Hutt
+        await SeedFilmCharacterAsync(3, 16); // Jabba Desilijic Tiure
 
         // Return of the Jedi - Planets
         await SeedFilmPlanetAsync(3, 1); // Tatooine
@@ -458,9 +470,9 @@ public class DatabaseSeedService : IDatabaseSeedService
         await SeedFilmStarshipAsync(3, 5); // Death Star
         await SeedFilmStarshipAsync(3, 9); // Naboo fighter
         await SeedFilmStarshipAsync(3, 10); // Jedi Interceptor
-        await SeedFilmStarshipAsync(3, 11); // Slave 1
-        await SeedFilmStarshipAsync(3, 12); // Imperial shuttle
-        await SeedFilmStarshipAsync(3, 13); // Naboo Royal Starship
+        await SeedFilmStarshipAsync(3, 9); // Slave 1
+        await SeedFilmStarshipAsync(3, 10); // Imperial shuttle
+        await SeedFilmStarshipAsync(3, 6); // Naboo Royal Starship
 
         // Return of the Jedi - Vehicles
         await SeedFilmVehicleAsync(3, 4); // Sand Crawler
@@ -484,7 +496,7 @@ public class DatabaseSeedService : IDatabaseSeedService
         await SeedFilmCharacterAsync(4, 16); // Palpatine
         await SeedFilmCharacterAsync(4, 18); // Boba Fett
         await SeedFilmCharacterAsync(4, 19); // Jango Fett
-        await SeedFilmCharacterAsync(4, 81); // Jabba the Hutt
+        await SeedFilmCharacterAsync(4, 16); // Jabba Desilijic Tiure
 
         // The Phantom Menace - Planets
         await SeedFilmPlanetAsync(4, 8); // Naboo
@@ -525,7 +537,7 @@ public class DatabaseSeedService : IDatabaseSeedService
         await SeedFilmCharacterAsync(5, 16); // Palpatine
         await SeedFilmCharacterAsync(5, 18); // Boba Fett
         await SeedFilmCharacterAsync(5, 19); // Jango Fett
-        await SeedFilmCharacterAsync(5, 81); // Jabba the Hutt
+        await SeedFilmCharacterAsync(5, 16); // Jabba Desilijic Tiure
 
         // Attack of the Clones - Planets
         await SeedFilmPlanetAsync(5, 8); // Naboo
@@ -566,7 +578,7 @@ public class DatabaseSeedService : IDatabaseSeedService
         await SeedFilmCharacterAsync(6, 16); // Palpatine
         await SeedFilmCharacterAsync(6, 18); // Boba Fett
         await SeedFilmCharacterAsync(6, 19); // Jango Fett
-        await SeedFilmCharacterAsync(6, 81); // Jabba the Hutt
+        await SeedFilmCharacterAsync(6, 16); // Jabba Desilijic Tiure
 
         // Revenge of the Sith - Planets
         await SeedFilmPlanetAsync(6, 8); // Naboo
@@ -616,7 +628,7 @@ public class DatabaseSeedService : IDatabaseSeedService
         await SeedFilmCharacterAsync(7, 16); // Palpatine
         await SeedFilmCharacterAsync(7, 18); // Boba Fett
         await SeedFilmCharacterAsync(7, 19); // Jango Fett
-        await SeedFilmCharacterAsync(7, 81); // Jabba the Hutt
+        await SeedFilmCharacterAsync(7, 16); // Jabba Desilijic Tiure
 
         // The Force Awakens - Planets
         await SeedFilmPlanetAsync(7, 1); // Tatooine
@@ -715,14 +727,14 @@ public class DatabaseSeedService : IDatabaseSeedService
         // Jango Fett (ID 19) - Homeworld: Concord Dawn (ID 11)
         await SeedPersonHomeworldAsync(19, 11);
         
-        // Jabba the Hutt (ID 81) - Homeworld: Nal Hutta (ID 12)
-        await SeedPersonHomeworldAsync(81, 12);
+        // Jabba Desilijic Tiure (ID 16) - Homeworld: Nal Hutta (ID 24)
+        await SeedPersonHomeworldAsync(16, 24);
         
-        // Wedge Antilles (ID 20) - Homeworld: Corellia (ID 3)
-        await SeedPersonHomeworldAsync(20, 3);
+        // Wedge Antilles (ID 18) - Homeworld: Corellia (ID 22)
+        await SeedPersonHomeworldAsync(18, 22);
         
-        // Lando Calrissian (ID 21) - Homeworld: Socorro (ID 13)
-        await SeedPersonHomeworldAsync(21, 13);
+        // Lando Calrissian (ID 25) - Homeworld: Socorro (ID 30)
+        await SeedPersonHomeworldAsync(25, 30);
 
         // Relacionamentos Person-Species
         await SeedPersonSpeciesAsync(1, 1); // Luke Skywalker - Human
@@ -742,9 +754,9 @@ public class DatabaseSeedService : IDatabaseSeedService
         await SeedPersonSpeciesAsync(16, 1); // Palpatine - Human
         await SeedPersonSpeciesAsync(18, 1); // Boba Fett - Human
         await SeedPersonSpeciesAsync(19, 1); // Jango Fett - Human
-        await SeedPersonSpeciesAsync(81, 5); // Jabba the Hutt - Hutt
-        await SeedPersonSpeciesAsync(20, 1); // Wedge Antilles - Human
-        await SeedPersonSpeciesAsync(21, 1); // Lando Calrissian - Human
+        await SeedPersonSpeciesAsync(16, 5); // Jabba Desilijic Tiure - Hutt
+        await SeedPersonSpeciesAsync(18, 1); // Wedge Antilles - Human
+        await SeedPersonSpeciesAsync(25, 1); // Lando Calrissian - Human
 
         // Relacionamentos Person-Vehicles
         await SeedPersonVehicleAsync(1, 4); // Luke Skywalker - Sand Crawler
@@ -810,9 +822,9 @@ public class DatabaseSeedService : IDatabaseSeedService
         await SeedPlanetResidentAsync(1, 16); // Tatooine - Palpatine
         await SeedPlanetResidentAsync(1, 18); // Tatooine - Boba Fett
         await SeedPlanetResidentAsync(1, 19); // Tatooine - Jango Fett
-        await SeedPlanetResidentAsync(1, 81); // Tatooine - Jabba the Hutt
-        await SeedPlanetResidentAsync(1, 20); // Tatooine - Wedge Antilles
-        await SeedPlanetResidentAsync(1, 21); // Tatooine - Lando Calrissian
+        await SeedPlanetResidentAsync(1, 16); // Tatooine - Jabba Desilijic Tiure
+        await SeedPlanetResidentAsync(1, 18); // Tatooine - Wedge Antilles
+        await SeedPlanetResidentAsync(1, 25); // Tatooine - Lando Calrissian
 
         await SeedPlanetResidentAsync(2, 1); // Alderaan - Luke Skywalker
         await SeedPlanetResidentAsync(2, 2); // Alderaan - Leia Organa
@@ -831,9 +843,9 @@ public class DatabaseSeedService : IDatabaseSeedService
         await SeedPlanetResidentAsync(2, 16); // Alderaan - Palpatine
         await SeedPlanetResidentAsync(2, 18); // Alderaan - Boba Fett
         await SeedPlanetResidentAsync(2, 19); // Alderaan - Jango Fett
-        await SeedPlanetResidentAsync(2, 81); // Alderaan - Jabba the Hutt
-        await SeedPlanetResidentAsync(2, 20); // Alderaan - Wedge Antilles
-        await SeedPlanetResidentAsync(2, 21); // Alderaan - Lando Calrissian
+        await SeedPlanetResidentAsync(2, 16); // Alderaan - Jabba Desilijic Tiure
+        await SeedPlanetResidentAsync(2, 18); // Alderaan - Wedge Antilles
+        await SeedPlanetResidentAsync(2, 25); // Alderaan - Lando Calrissian
 
         await SeedPlanetResidentAsync(3, 1); // Yavin IV - Luke Skywalker
         await SeedPlanetResidentAsync(3, 2); // Yavin IV - Leia Organa
@@ -852,9 +864,9 @@ public class DatabaseSeedService : IDatabaseSeedService
         await SeedPlanetResidentAsync(3, 16); // Yavin IV - Palpatine
         await SeedPlanetResidentAsync(3, 18); // Yavin IV - Boba Fett
         await SeedPlanetResidentAsync(3, 19); // Yavin IV - Jango Fett
-        await SeedPlanetResidentAsync(3, 81); // Yavin IV - Jabba the Hutt
-        await SeedPlanetResidentAsync(3, 20); // Yavin IV - Wedge Antilles
-        await SeedPlanetResidentAsync(3, 21); // Yavin IV - Lando Calrissian
+        await SeedPlanetResidentAsync(3, 16); // Yavin IV - Jabba Desilijic Tiure
+        await SeedPlanetResidentAsync(3, 18); // Yavin IV - Wedge Antilles
+        await SeedPlanetResidentAsync(3, 25); // Yavin IV - Lando Calrissian
 
         await _context.SaveChangesAsync();
         _logger.LogInformation("Relacionamentos de planetas populados com sucesso!");
