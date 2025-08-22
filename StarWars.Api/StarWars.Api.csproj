@@ -6,19 +6,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);1591</NoWarn>
-    
-    <!-- AOT Configuration -->
-    <PublishAot>true</PublishAot>
-    <PublishTrimmed>true</PublishTrimmed>
-    <TrimMode>link</TrimMode>
-    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
-    <SelfContained>true</SelfContained>
-    <RuntimeIdentifier>linux-x64</RuntimeIdentifier>
-    
-    <!-- AOT Optimizations -->
-    <IlcOptimizationPreference>Speed</IlcOptimizationPreference>
-    <IlcFoldIdenticalMethodBodies>true</IlcFoldIdenticalMethodBodies>
-    <IlcDisableReflection>false</IlcDisableReflection>
   </PropertyGroup>
 
   <ItemGroup>
