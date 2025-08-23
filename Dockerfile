@@ -10,8 +10,8 @@ RUN dotnet restore
 
 # Copy source code
 COPY StarWars.Api/ ./StarWars.Api/
-
-COPY Data/ ./app/Data/
+COPY StarWars.Api/Data/ ./Data/
+COPY StarWars.Api/Data/ ./app/Data/
 
 # Build project
 RUN dotnet build -c Release --no-restore
